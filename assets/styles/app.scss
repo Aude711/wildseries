@@ -1,0 +1,15 @@
+@import "~bootstrap/scss/bootstrap";
+
+$primary: #B0A8B9;
+$secondary: #7B7484;
+$thirdly: #8E7069;
+$font: black;
+
+body {
+    background-color: $primary;
+}
+
+nav {
+    background-color: $secondary;
+}
+
