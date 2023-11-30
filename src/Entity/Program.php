@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\ProgramRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: ProgramRepository::class)]
 class Program
@@ -23,9 +25,40 @@ class Program
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $poster = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'programs')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
+
+    #[ORM\OneToMany(mappedBy: 'program', targetEntity: Season::class)]
+    private Collection $seasons;
+
+    public function __construct()
+    {
+        $this->seasons = new ArrayCollection();
+    }
+
+    public function addSeason(Season $season): void
+    {
+        if (!$this->seasons->contains($season)) {
+            $this->seasons[] = $season;
+            $season->setProgram($this); // Set the current program to the season
+        }
+    }
+
+    public function removeSeason(Season $season): void
+    {
+        if ($this->seasons->removeElement($season)) {
+            // If the program was set on the season, set it to null
+            if ($season->getProgram() === $this) {
+                $season->setProgram(null);
+            }
+        }
+    }
+
+    public function getSeasons(): Collection
+    {
+        return $this->seasons;
+    }
 
     public function getId(): ?int
     {
