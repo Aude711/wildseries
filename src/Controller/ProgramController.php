@@ -10,6 +10,7 @@ use App\Repository\SeasonRepository;
 use App\Entity\Episode;
 use App\Entity\Program;
 use App\Entity\Season;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 
 #[Route('/program', name: 'program_')]
 class ProgramController extends AbstractController
@@ -25,12 +26,11 @@ class ProgramController extends AbstractController
     }
 
     #[Route('/show/{id<^[0-9]+$>}', methods: ['GET'], name: 'show')]
-    public function show(int $id, ProgramRepository $programRepository): Response
+    public function show(Program $program): Response
     {
-        $program = $programRepository->findOneBy(['id' => $id]);
         if (!$program) {
             throw $this->createNotFoundException(
-                'No program with id : '.$id.' found in program\'s table.'
+                'No program with id : '.$program.' found in program\'s table.'
             );
         }
         return $this->render('program/show.html.twig', [
@@ -38,14 +38,34 @@ class ProgramController extends AbstractController
         ]);
 
     }
-    #[Route('/{programId}/season/{seasonId}', name: 'season_show')]
-    public function showSeason(int $programId, int $seasonId, ProgramRepository $programRepository, SeasonRepository $seasonRepository) 
+    #[Route('/{program}/season/{season}', name: 'season_show')]
+    public function showSeason(Program $program, Season $season): Response
     {
-        $program = $programRepository->findOneBy(['id' => $programId]);
-        $season = $seasonRepository->findOneBy(['id' => $seasonId, 'program' => $program]);
+        if (!$program) {
+            throw $this->createNotFoundException('Program not found');
+        }
+
+        if (!$season) {
+            throw $this->createNotFoundException('Season not found for this program');
+        }
+
         return $this->render('program/season_show.html.twig', [
             'program' => $program,
             'season' => $season,
         ]);
+    }
+
+    #[Route('/{program_id}/season/{season_id}/episode/{episode_id}', name: 'episode_show')]
+    public function showEpisode(
+        #[MapEntity(mapping: ['program_id' => 'id'])] Program $program, 
+        #[MapEntity(mapping: ['season_id' => 'id'])] Season $season,
+        #[MapEntity(mapping: ['episode_id' => 'id'])] Episode $episode)
+    {
+        return $this->render('program/episode_show.html.twig', [
+            'program' => $program,
+            'season' => $season,
+            'episode' => $episode,
+        ]);
+
     }
 }
