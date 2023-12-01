@@ -3,28 +3,30 @@
 namespace App\DataFixtures;
 
 use App\Entity\Episode;
+use App\DataFixtures\ProgramFixtures;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Faker\Factory;
 
 class EpisodeFixtures extends Fixture implements DependentFixtureInterface
 {
-    const EPISODES = [
-        ['Title' => 'Days Gone Bye', 'Number' => '1', 'Synopsis'  => 'Deputy Sheriff Rick Grimes awakens from a coma, and searches for his family in a world ravaged by the undead.', 'Season' => 'season_1'],
-        ['Title' => 'Guts', 'Number' => '2', 'Synopsis' => 'In Atlanta, Rick is rescued by a group of survivors, but they soon find themselves trapped inside a department store surrounded by walkers.', 'Season' => 'season_1'],
-        ['Title' => 'Tell it to the frogs', 'Number' => '3', 'Synopsis' => 'Rick is reunited with Lori and Carl but soon decides - along with some of the other survivors - to return to the rooftop and rescue Merle. Meanwhile, tensions run high between the other survivors at the camp.', 'Season' => 'season_1']
-    ];
     public function load(ObjectManager $manager)
     {
-        foreach (self::EPISODES as $episodeList) {
-            $episode = new Episode();
-            $episode->setTitle($episodeList['Title']);
-            $episode->setNumber($episodeList['Number']);
-            $episode->setSynopsis($episodeList['Synopsis']);
-            $episode->setSeason($this->getReference($episodeList['Season']));
-            $manager->persist($episode);
-         }
-         $manager->flush();
+        $faker = Factory::create();
+        foreach (ProgramFixtures::PROGRAM as $programList) {
+            for($seasonNumber = 1; $seasonNumber < 6; $seasonNumber++){
+                for ($i = 1; $i < 50; $i++) {
+                $episode = new Episode();
+                $episode->setTitle($faker->word());
+                $episode->setNumber($i);
+                $episode->setSynopsis($faker->sentence());
+                $episode->setSeason($this->getReference('program_' . $programList['Title'] . 'season_' . $seasonNumber));
+                $manager->persist($episode);
+            }
+        }
+        }
+        $manager->flush();
     }
 
     public function getDependencies()

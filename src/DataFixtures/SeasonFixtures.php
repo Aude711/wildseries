@@ -6,25 +6,27 @@ use App\Entity\Season;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Faker\Factory;
 
 class SeasonFixtures extends Fixture implements DependentFixtureInterface
 {
-    const SEASON = [
-        ['Number' => '1', 'Year' => '2010', 'Description' => 'zooombies', 'Program' => 'program_WalkingDead'],
-        ['Number' => '2', 'Year' => '2011', 'Description' => 'ooooh', 'Program' => 'program_WalkingDead'],
-        ['Number' => '3', 'Year' => '2012', 'Description' => 'gzombie oooh', 'Program' => 'program_WalkingDead']
-    ];
+
     public function load(ObjectManager $manager)
     {
-        foreach (self::SEASON as $seasonList) {
+        $faker = Factory::create();
+        foreach (ProgramFixtures::PROGRAM as $programList) {
+        for($i = 1; $i <= 5; $i++) {
             $season = new Season();
-            $season->setNumber($seasonList['Number']);
-            $season->setYear($seasonList['Year']);
-            $season->setDescription($seasonList['Description'])
-                    ->setProgram($this->getReference($seasonList['Program']));
+            //Ce Faker va nous permettre d'alimenter l'instance de Season que l'on souhaite ajouter en base
+            $season->setNumber($i);
+            $season->setYear($faker->year());
+            $season->setDescription($faker->paragraphs(3, true));
+            $season->setProgram($this->getReference('program_' . $programList['Title']));
+            $this->addReference('program_' . $programList['Title'] . 'season_' . $i, $season);
             $manager->persist($season);
-            $this->addReference('season_' . $seasonList['Number'], $season);
+            }
         }
+
         $manager->flush();
     }
 

@@ -32,6 +32,12 @@ class Program
     #[ORM\OneToMany(mappedBy: 'program', targetEntity: Season::class)]
     private Collection $seasons;
 
+    #[ORM\Column(length: 255)]
+    private ?string $country = null;
+
+    #[ORM\Column]
+    private ?int $year = null;
+
     public function __construct()
     {
         $this->seasons = new ArrayCollection();
@@ -109,6 +115,30 @@ class Program
     public function setCategory(?Category $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(string $country): static
+    {
+        $this->country = $country;
+
+        return $this;
+    }
+
+    public function getYear(): ?int
+    {
+        return $this->year;
+    }
+
+    public function setYear(int $year): static
+    {
+        $this->year = $year;
 
         return $this;
     }
