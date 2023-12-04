@@ -36,7 +36,7 @@ class ProgramController extends AbstractController
         $form = $this->createForm(ProgramType::class, $program);
         $form->handleRequest($request);
         // Was the form submitted ?
-            if ($form->isSubmitted()) {
+            if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($program);
             $entityManager->flush();
             return $this->redirectToRoute('program_index');
