@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Form\ProgramType;
+use App\Services\ProgramDuration;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,7 @@ use App\Entity\Program;
 use App\Entity\Season;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/program', name: 'program_')]
 class ProgramController extends AbstractController
@@ -37,7 +39,7 @@ class ProgramController extends AbstractController
     }
 
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
-    public function new(Request $request, ProgramRepository $programRepository, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, ProgramRepository $programRepository, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $program = new Program();
 
@@ -46,6 +48,8 @@ class ProgramController extends AbstractController
         $form->handleRequest($request);
         // Was the form submitted ?
             if ($form->isSubmitted() && $form->isValid()) {
+                $slug = $slugger->slug($program->getTitle());
+                $program->setSlug($slug);
             $entityManager->persist($program);
             $entityManager->flush();
             $this->addFlash('success', 'The new program has been created');
@@ -58,9 +62,11 @@ class ProgramController extends AbstractController
         ]);
     }
 
-    #[Route('/show/{id<^[0-9]+$>}', methods: ['GET'], name: 'show')]
-    public function show(Program $program): Response
+    #[Route('/{slug}', methods: ['GET'], name: 'show')]
+    public function show(Program $program, ProgramDuration $programDuration): Response
     {
+        $programDuration = $programDuration->calculate($program);
+
         if (!$program) {
             throw $this->createNotFoundException(
                 'No program with id : '.$program.' found in program\'s table.'
@@ -68,12 +74,15 @@ class ProgramController extends AbstractController
         }
         return $this->render('program/show.html.twig', [
             'program' => $program,
+            'slug' => $program->getSlug(),
+            'programDuration' => $programDuration,
         ]);
 
     }
-    #[Route('/{program}/season/{season}', name: 'season_show')]
-    public function showSeason(Program $program, Season $season): Response
+    #[Route('/{slug}/season/{season}', name: 'season_show')]
+    public function showSeason(Program $program, Season $season, ProgramDuration $programDuration): Response
     {
+        $programDuration = $programDuration->calculate($program);
         if (!$program) {
             throw $this->createNotFoundException('Program not found');
         }
@@ -85,19 +94,25 @@ class ProgramController extends AbstractController
         return $this->render('program/season_show.html.twig', [
             'program' => $program,
             'season' => $season,
+            'slug' => $program->getSlug(),
+            'programDuration' => $programDuration,
         ]);
     }
 
-    #[Route('/{program_id}/season/{season_id}/episode/{episode_id}', name: 'episode_show')]
+    #[Route('/{slug}/season/{season_id}/episode/{episode_id}', name: 'episode_show')]
     public function showEpisode(
-        #[MapEntity(mapping: ['program_id' => 'id'])] Program $program, 
+        #[MapEntity(mapping: ['slug' => 'slug'])] Program $program, 
         #[MapEntity(mapping: ['season_id' => 'id'])] Season $season,
-        #[MapEntity(mapping: ['episode_id' => 'id'])] Episode $episode)
+        #[MapEntity(mapping: ['episode_id' => 'id'])] Episode $episode, ProgramDuration $programDuration
+        )
     {
+        $programDuration = $programDuration->calculate($program);
         return $this->render('program/episode_show.html.twig', [
             'program' => $program,
             'season' => $season,
             'episode' => $episode,
+            'slug' => $program->getSlug(),
+            'programDuration' => $programDuration,
         ]);
 
     }

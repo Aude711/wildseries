@@ -24,7 +24,7 @@ class ActorController extends AbstractController
     {
         if (!$actors) {
             throw $this->createNotFoundException(
-                'No program with id : '.$actors.' found in program\'s table.'
+                'No actor with id : '.$actors.' found in program\'s table.'
             );
         }
         return $this->render('actor/show.html.twig', [

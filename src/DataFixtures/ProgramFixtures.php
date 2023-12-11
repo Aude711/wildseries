@@ -3,10 +3,10 @@
 namespace App\DataFixtures;
 
 use App\Entity\Program;
-use App\DataFixtures\SeasonFixtures;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ProgramFixtures extends Fixture implements DependentFixtureInterface
 {
@@ -20,11 +20,21 @@ class ProgramFixtures extends Fixture implements DependentFixtureInterface
         ['Title' => 'SquidGame', 'Synopsis' => 'Tentés par un prix alléchant en cas de victoire, des centaines de joueurs désargentés acceptent de s\'affronter lors de jeux pour enfants aux enjeux mortels.', 'Country' => 'Coréen', 'Year' => '2021', 'Category' => 'category_Action']
     ];
 
+    public function __construct( private SluggerInterface $slugger)
+    {
+        $this->slugger = $slugger;
+    }
+    
     public function load(ObjectManager $manager)
     {
         foreach (self::PROGRAM as $programList) {
             $program = new Program();
-            $program->setTitle($programList['Title']);
+
+            $title = $programList['Title'];
+            $program->setTitle($title);
+            $slug = $this->slugger->slug($title);
+            $program->setSlug($slug);
+            
             $program->setSynopsis($programList['Synopsis']);
             $program->setCountry($programList['Country']);
             $program->setYear($programList['Year'])
