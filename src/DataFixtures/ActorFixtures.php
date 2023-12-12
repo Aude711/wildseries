@@ -30,7 +30,6 @@ class ActorFixtures extends Fixture implements DependentFixtureInterface
             }
         $manager->flush();
     }
-
     public function getDependencies()
     {
         return [
@@ -38,4 +37,3 @@ class ActorFixtures extends Fixture implements DependentFixtureInterface
         ];
     }
 }
-

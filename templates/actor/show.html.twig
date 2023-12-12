@@ -1,13 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ actors.name }}{% endblock %}
+{% block title %}{{ actor.name }}{% endblock %}
 
 {% block body %}
-    <h1>{{ actors.name }}</h1>
+    <h1>{{ actor.name }}</h1>
+    <img src="{{ vich_uploader_asset(actor) }}" alt="{{ actor.name }}">
     <div>
         <strong>Participe aux séries :</strong>
         <ul>
-            {% for program in actors.programs %}
+            {% for program in actor.programs %}
                 <li><a href="{{ path('program_show', {slug: program.slug}) }}">{{ program.title }}</a></li>
             {% else %}
                 <li>Aucune série associée</li>
