@@ -17,8 +17,8 @@ use App\Entity\Episode;
 use App\Entity\Program;
 use App\Entity\Season;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 #[Route('/program', name: 'program_')]
 class ProgramController extends AbstractController
@@ -52,6 +52,7 @@ class ProgramController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
                 $slug = $slugger->slug($program->getTitle());
                 $program->setSlug($slug);
+                $program->setOwner($this->getUser());
             $entityManager->persist($program);
 
             $email = (new Email())
@@ -129,11 +130,21 @@ class ProgramController extends AbstractController
 
     }
 
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    #[Route('/{slug}/edit', name: 'edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Program $program, EntityManagerInterface $entityManager): Response
     {
+        if ($this->getUser() !== $program->getOwner() && !$this->isGranted('ROLE_ADMIN')) {
+            // If not the owner, throws a 403 Access Denied exception
+            throw $this->createAccessDeniedException('Only the owner can edit the program!');
+        }
+        
         $form = $this->createForm(ProgramType::class, $program);
         $form->handleRequest($request);
+
+        if ($this->getUser() !== $program->getOwner()) {
+            // If not the owner, throws a 403 Access Denied exception
+            throw $this->createAccessDeniedException('Only the owner can edit the program!');
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
