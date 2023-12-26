@@ -25,5 +25,12 @@
         {# <input type="hidden" name="_target_path" value="/account"> #}
 
         <button type="submit">login</button>
+
+        <div>
+			<a href="{{ path('app_forgot_password_request') }}">Mot de passe oublié</a>
+		</div>
+		<div>
+			<a href="{{ path('app_register') }}">Créer un compte</a>
+		</div>
     </form>
 {% endblock %}

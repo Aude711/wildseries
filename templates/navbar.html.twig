@@ -20,6 +20,9 @@
 						{% if app.user %}
 							<a href="{{ path('app_logout') }}">
 								Se déconnecter</a>
+                <div>
+								<a href="{{ path('app_profile') }}">Mon profil</a>
+							</div>
 						{% else %}
 							<a href="{{ path('app_login') }}">
 								Se connecter</a>
