@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Form\ProgramType;
+use App\Form\SearchProgramType;
 use App\Services\ProgramDuration;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,17 +25,20 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 class ProgramController extends AbstractController
 {
     #[Route('/', name: 'index')]
-    public function index(ProgramRepository $programRepository, RequestStack $requestStack): Response
+    public function index(ProgramRepository $programRepository, Request $request): Response
     {
-        $session = $requestStack->getSession();
-        if (!$session->has('total')) {
-            $session->set('total', 0); // if total doesn’t exist in session, it is initialized.
+        $form = $this->createForm(SearchProgramType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $search = $form->getData()['search'];
+            $programs = $programRepository->findLikeName($search);
+        } else {
+            $programs = $programRepository->findAll();
         }
-    
-        $total = $session->get('total');
-        $programs = $programRepository->findAll();
         return $this->render('program/index.html.twig', [
             'programs' => $programs,
+            'form' => $form,
          ]);
          
 
