@@ -23,15 +23,18 @@ class ProgramRepository extends ServiceEntityRepository
 
     public function findLikeName(string $name)
     {
-    $queryBuilder = $this->createQueryBuilder('p')
-        ->join('p.actors', 'a')
-        ->where('p.title LIKE :name')
-        ->orWhere('a.name LIKE :name')
-        ->setParameter('name', '%' . $name . '%')
-        ->orderBy('p.title', 'ASC')
-        ->getQuery();
+        $result = [];
 
-    return $queryBuilder->getResult();
+        if (!empty($name)) {
+            $result = $this->createQueryBuilder('p')
+                ->andWhere('p.title LIKE :name')
+                ->setParameter('name', '%' . $name . '%')
+                ->orderBy('p.title', 'ASC')
+                ->getQuery()
+                ->getResult();
+        }
+    
+        return $result;
     }
 
     public function findRecentPrograms()
@@ -43,6 +46,7 @@ class ProgramRepository extends ServiceEntityRepository
 
         return $query->execute();
     }
+
 
 //    /**
 //     * @return Program[] Returns an array of Program objects
